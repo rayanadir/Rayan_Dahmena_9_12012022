@@ -35,31 +35,33 @@ export default class {
                 .list()
                 .then(snapshot => {
                     //console.log(snapshot)
-                    const bills = snapshot
-                        .sort((a, b) => {
-                            return new Date(formatDate(b.date)) - new Date(formatDate(a.date));
-                        });
-
-                    bills.map(doc => {
-                            //console.log(formatDate(doc.date));
-                            try {
-                                return {
-                                    ...doc,
-                                    date: formatDate(doc.date),
-                                    status: formatStatus(doc.status)
-                                }
-                            } catch (e) {
-                                // if for some reason, corrupted data was introduced, we manage here failing formatDate function
-                                // log the error and return unformatted date in that case
-                                console.log(e, 'for', doc)
-                                return {
-                                    ...doc,
-                                    date: doc.date,
-                                    status: formatStatus(doc.status)
-                                }
+                    const bills = snapshot;
+                    /*bills.map(doc => {
+                        try {
+                            return {
+                            ...doc,
+                            date: formatDate(doc.date),
+                            status: formatStatus(doc.status)
+                            };
+                        } catch (e) {
+                            // if for some reason, corrupted data was introduced, we manage here failing formatDate function
+                            // log the error and return unformatted date in that case
+                            console.log(e, 'for', doc)
+                            return {
+                                ...doc,
+                                date: doc.date,
+                                status: formatStatus(doc.status)
                             }
-                        })
-                        //console.log(bills)
+                        }
+                    })*/
+                    bills.sort((a, b) => {
+                        return new Date(b.date) - new Date(a.date);
+                    });
+                    bills.map((doc) => {
+                        doc.date = formatDate(doc.date);
+                        doc.status = formatStatus(doc.status);
+                    })
+                    console.log(bills)
                     return bills
                 })
         }
