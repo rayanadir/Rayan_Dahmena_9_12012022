@@ -75,7 +75,6 @@ export default class {
         $('#arrow-icon3').click((e) => this.handleShowTickets(e, bills, 3))
         this.getBillsAllUsers()
         new Logout({ localStorage, onNavigate })
-        console.log(bills);
     }
 
     handleClickIconEye = () => {
@@ -95,7 +94,7 @@ export default class {
             $(`#open-bill${bill.id}`).css({ background: '#2A2B35' })
             $('.dashboard-right-container div').html(DashboardFormUI(bill))
             $('.vertical-navbar').css({ height: '150vh' })
-                //this.counter++
+            this.counter++
         } else {
             $(`#open-bill${bill.id}`).css({ background: '#0D5AE5' })
 
@@ -103,11 +102,12 @@ export default class {
         <div id="big-billed-icon"> ${BigBilledIcon} </div>
       `)
             $('.vertical-navbar').css({ height: '120vh' })
-                //this.counter++;
+            this.counter++;
         }
         $('#icon-eye-d').click(this.handleClickIconEye)
         $('#btn-accept-bill').click((e) => this.handleAcceptSubmit(e, bill))
         $('#btn-refuse-bill').click((e) => this.handleRefuseSubmit(e, bill))
+            //console.log(e.currentTarget.dataset.bill);
     }
 
     handleAcceptSubmit = (e, bill) => {
@@ -145,10 +145,9 @@ export default class {
             this.counter++
         }
 
-        bills.forEach(bill => {
-                $(`#open-bill${bill.id}`).click((e) => this.handleEditTicket(e, bill, bills))
-            })
-            //console.log(e);
+        filteredBills(bills, getStatus(this.index)).forEach(bill => {
+            $(`#open-bill${bill.id}`).click((e) => this.handleEditTicket(e, bill, bills))
+        })
         return bills
 
     }
