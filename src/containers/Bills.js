@@ -34,8 +34,6 @@ export default class {
                 .bills()
                 .list()
                 .then(snapshot => {
-                    //console.log(snapshot)
-
                     /*bills.map(doc => {
                         try {
                             return {
@@ -54,14 +52,11 @@ export default class {
                             }
                         }
                     })*/
-                    var billsList = snapshot;
-                    billsList.sort((a, b) => { return new Date(b.date) - new Date(a.date) });
-                    billsList.map((doc) => {
+                    const bills = snapshot.filter(bill => { return bill.type !== null });
+                    bills.map((doc) => {
                         doc.date = formatDate(doc.date);
                         doc.status = formatStatus(doc.status);
-                    })
-                    var bills = billsList.filter(bill => { return bill.type !== null })
-                    billsList = bills;
+                    });
                     return bills;
                 })
         }
