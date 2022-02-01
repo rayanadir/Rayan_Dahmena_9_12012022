@@ -53,10 +53,12 @@ export default class {
                         }
                     })*/
                     const bills = snapshot.filter(bill => { return bill.type !== null });
+                    bills.sort((a, b) => { return new Date(b.date) - new Date(a.date) });
                     bills.map((doc) => {
                         doc.date = formatDate(doc.date);
                         doc.status = formatStatus(doc.status);
                     });
+                    console.log(bills);
                     return bills;
                 })
         }
