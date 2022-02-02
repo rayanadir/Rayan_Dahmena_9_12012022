@@ -1,64 +1,24 @@
-import { ROUTES_PATH } from '../constants/routes.js'
-import { formatDate, formatStatus } from "../app/format.js"
-import Logout from "./Logout.js"
+import { screen } from "@testing-library/dom"
+import BillsUI from "../views/BillsUI.js"
+import { bills } from "../fixtures/bills.js"
 
-export default class {
-    constructor({ document, onNavigate, store, localStorage }) {
-        this.document = document
-        this.onNavigate = onNavigate
-        this.store = store
-        const buttonNewBill = document.querySelector(`button[data-testid="btn-new-bill"]`)
-        if (buttonNewBill) buttonNewBill.addEventListener('click', this.handleClickNewBill)
-        const iconEye = document.querySelectorAll(`div[data-testid="icon-eye"]`)
-        if (iconEye) iconEye.forEach(icon => {
-            icon.addEventListener('click', (e) => this.handleClickIconEye(icon))
+describe("Given I am connected as an employee", () => {
+    describe("When I am on Bills Page", () => {
+        test("Then bill icon in vertical layout should be highlighted", () => {
+            const html = BillsUI({ data: [] })
+            document.body.innerHTML = html
+                //to-do write expect expression
+            const icon_window = screen.getByTestId('icon-window');
+            const icon_activated = icon_window.classList.contains('active-icon');
+            expect(icon_activated).toBeTruthy();
         })
-        new Logout({ document, localStorage, onNavigate })
-    }
-
-    handleClickNewBill = e => {
-        this.onNavigate(ROUTES_PATH['NewBill'])
-    }
-
-    handleClickIconEye = (icon) => {
-        const billUrl = icon.getAttribute("data-bill-url")
-        const imgWidth = Math.floor($('#modaleFile').width() * 0.5)
-        $('#modaleFile').find(".modal-body").html(`<div style='text-align: center;' class="bill-proof-container"><img width=${imgWidth} src=${billUrl} /></div>`)
-        $('#modaleFile').modal('show')
-    }
-
-    // not need to cover this function by tests
-    getBills = () => {
-        if (this.store) {
-            return this.store
-                .bills()
-                .list()
-                .then(snapshot => {
-                    /*bills.map(doc => {
-                        try {
-                            return {
-                            ...doc,
-                            date: formatDate(doc.date),
-                            status: formatStatus(doc.status)
-                            };
-                        } catch (e) {
-                            // if for some reason, corrupted data was introduced, we manage here failing formatDate function
-                            // log the error and return unformatted date in that case
-                            console.log(e, 'for', doc)
-                            return {
-                                ...doc,
-                                date: doc.date,
-                                status: formatStatus(doc.status)
-                            }
-                        }
-                    })*/
-                    const bills = snapshot.filter(bill => { return bill.type !== null });
-                    bills.map((doc) => {
-                        doc.date = formatDate(doc.date);
-                        doc.status = formatStatus(doc.status);
-                    });
-                    return bills;
-                })
-        }
-    }
-}
+        test("Then bills should be ordered from earliest to latest", () => {
+            const html = BillsUI({ data: bills })
+            document.body.innerHTML = html
+            const dates = screen.getAllByText(/^(19|20)\d\d[- /.](0[1-9]|1[012])[- /.](0[1-9]|[12][0-9]|3[01])$/i).map(a => a.innerHTML)
+            const antiChrono = (a, b) => (a < b ? 1 : -1)
+            const datesSorted = [...dates].sort(antiChrono)
+            expect(dates).toEqual(datesSorted)
+        })
+    })
+})
