@@ -152,6 +152,7 @@ export default class {
     }
 
     // not need to cover this function by tests
+    /* istanbul ignore next */
     getBillsAllUsers = () => {
         if (this.store) {
             return this.store
@@ -172,6 +173,7 @@ export default class {
     }
 
     // not need to cover this function by tests
+    /* istanbul ignore next */
     updateBill = (bill) => {
         if (this.store) {
             return this.store
