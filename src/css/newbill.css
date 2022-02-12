@@ -68,5 +68,14 @@ select:focus {
 
 .required_extension {
     display: none;
+}
+
+.required_extension[error="true"] {
+    display: block;
+    color: red;
+}
+
+.error {
+    display: block;
     color: red;
 }
