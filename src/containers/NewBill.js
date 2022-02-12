@@ -23,9 +23,8 @@ export default class NewBill {
         const formData = new FormData()
         const email = JSON.parse(localStorage.getItem("user")).email
         const fileType = file.type.substring(6)
-        var required_extension = this.document.getElementById('required_extension');
         if (fileType == "png" || fileType == "jpg" || fileType == "jpeg") {
-            required_extension.style.display = "none";
+            document.getElementById('required_extension').classList.remove('error')
             formData.append('file', file)
             formData.append('email', email)
             this.store
@@ -44,7 +43,7 @@ export default class NewBill {
                 }).catch(error => console.error(error))
         } else {
             this.document.querySelector(`input[data-testid="file"]`).value = null
-            required_extension.style.display = "block";
+            document.getElementById('required_extension').classList.add('error')
         }
     }
     handleSubmit = e => {
