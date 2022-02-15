@@ -8,8 +8,8 @@ import { bills } from "../fixtures/bills.js"
 import { ROUTES_PATH } from "../constants/routes.js";
 import { localStorageMock } from "../__mocks__/localStorage.js";
 import Bills from '../containers/Bills.js'
-import NewBill from "../containers/NewBill.js";
 import router from "../app/Router.js";
+import mockStore from "../__mocks__/store"
 
 
 describe("Given I am connected as an employee", () => {
@@ -69,16 +69,24 @@ describe("Given I am connected as an employee", () => {
             document.body.append(root)
             router()
             window.onNavigate(ROUTES_PATH.Bills)
+            const store = null;
+            const billsList = new Bills({ document, onNavigate, store, localStorage: window.localStorage, });
+            const newBill = jest.fn(() => billsList.handleClickNewBill)
             const navigationButton = screen.getByTestId('btn-new-bill');
-            const navigate = jest.fn(window.onNavigate(ROUTES_PATH.NewBill));
-            navigationButton.addEventListener("click", navigate);
-            fireEvent.click(navigationButton);
-            expect(navigate).toHaveBeenCalled();
-            const content_header = document.querySelector('.content-header');
-            const form = document.querySelector('.form-newbill-container');
-            const content = document.querySelector('.content')
-            expect(content.querySelector(content_header)).toBeTruthy()
-            expect(content.querySelector(form)).toBeTruthy()
+            navigationButton.addEventListener('click', newBill);
+            fireEvent.click(navigationButton)
+            expect(screen.getAllByText('Envoyer une note de frais')).toBeTruthy()
+                /*
+                const navigationButton = screen.getByTestId('btn-new-bill');
+                const navigate = jest.fn(window.onNavigate(ROUTES_PATH.NewBill));
+                navigationButton.addEventListener("click", navigate);
+                fireEvent.click(navigationButton);
+                expect(navigate).toHaveBeenCalled();
+                const content_header = document.querySelector('.content-header');
+                const form = document.querySelector('.form-newbill-container');
+                const content = document.querySelector('.content')
+                expect(content.querySelector(content_header)).toBeTruthy()
+                expect(content.querySelector(form)).toBeTruthy()*/
         })
     })
 })
@@ -114,34 +122,17 @@ describe("Given I am a user connected as Employee", () => {
             router()
         })
         test("fetches bills from an API and fails with 404 message error", async() => {
-
-            mockStore.bills.mockImplementationOnce(() => {
-                return {
-                    list: () => {
-                        return Promise.reject(new Error("Erreur 404"))
-                    }
-                }
-            })
-            window.onNavigate(ROUTES_PATH.Bills)
-            await new Promise(process.nextTick);
-            const message = await screen.getByText(/Erreur 404/)
-            expect(message).toBeTruthy()
+            const html = BillsUI({ error: 'Erreur 404' })
+            document.body.innerHTML = html;
+            const message = await screen.getByText(/Erreur 404/);
+            expect(message).toBeTruthy();
         })
 
         test("fetches messages from an API and fails with 500 message error", async() => {
-
-            mockStore.bills.mockImplementationOnce(() => {
-                return {
-                    list: () => {
-                        return Promise.reject(new Error("Erreur 500"))
-                    }
-                }
-            })
-
-            window.onNavigate(ROUTES_PATH.Bills)
-            await new Promise(process.nextTick);
-            const message = await screen.getByText(/Erreur 500/)
-            expect(message).toBeTruthy()
+            const html = BillsUI({ error: 'Erreur 500' })
+            document.body.innerHTML = html;
+            const message = await screen.getByText(/Erreur 500/);
+            expect(message).toBeTruthy();
         })
     })
 })

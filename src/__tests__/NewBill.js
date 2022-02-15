@@ -10,6 +10,9 @@ import { ROUTES_PATH } from "../constants/routes.js";
 import { localStorageMock } from "../__mocks__/localStorage.js";
 
 import router from "../app/Router.js";
+import BillsUI from "../views/BillsUI.js";
+
+import store from "../__mocks__/store.js";
 
 describe("Given I am connected as an employee", () => {
     describe("When I am on NewBill Page", () => {
@@ -33,8 +36,8 @@ describe("Given I am connected as an employee", () => {
         test("Then the input file should display the file name", () => {
             const html = NewBillUI();
             document.body.innerHTML = html;
-            const newBill = new NewBill({ document, onNavigate, store: null, localStorage: window.localStorage })
-            const handleChangeFile = jest.fn(() => newBill.handleChangeFile)
+            const newBill = new NewBill({ document, onNavigate, store, localStorage: window.localStorage })
+            const handleChangeFile = jest.fn((e) => newBill.handleChangeFile(e))
             const input = screen.getByTestId('file');
             input.addEventListener('change', handleChangeFile);
             //fichier au bon format
@@ -46,13 +49,13 @@ describe("Given I am connected as an employee", () => {
                 }
             })
             expect(handleChangeFile).toHaveBeenCalled()
-            expect(input).toBe('image.png');
+            expect(input.files[0].name).toBe('image.png');
         })
         test("Then a bill is created", () => {
             const html = NewBillUI();
             document.body.innerHTML = html;
             const newBill = new NewBill({ document, onNavigate, store: null, localStorage: window.localStorage })
-            const handleSubmit = jest.fn(() => newBill.handleSubmit)
+            const handleSubmit = jest.fn((e) => newBill.handleSubmit(e))
             const submit = screen.getByTestId('form-new-bill');
             submit.addEventListener('submit', handleSubmit);
             fireEvent.submit(submit)
@@ -60,62 +63,63 @@ describe("Given I am connected as an employee", () => {
         })
     })
     describe("When I select a file with an incorrect extension", () => {
-            test("Then the bill is deleted", () => {
-                const html = NewBillUI();
-                document.body.innerHTML = html;
-                const newBill = new NewBill({ document, onNavigate, store: null, localStorage: window.localStorage })
-                const handleChangeFile = jest.fn(() => newBill.handleChangeFile)
-                const input = screen.getByTestId('file');
-                input.addEventListener('change', handleChangeFile);
-                //fichier au mauvais format
-                fireEvent.change(input, {
-                    target: {
-                        files: [new File(['image.txt'], 'image.txt', {
-                            type: 'image/txt'
-                        })],
-                    }
-                })
-                expect(handleChangeFile).toHaveBeenCalled()
-                expect(input).toBe('image.txt');
+        test("Then the bill is deleted", () => {
+            const html = NewBillUI();
+            document.body.innerHTML = html;
+            const newBill = new NewBill({ document, onNavigate, store: null, localStorage: window.localStorage })
+            const handleChangeFile = jest.fn((e) => newBill.handleChangeFile(e))
+            const input = screen.getByTestId('file');
+            input.addEventListener('change', handleChangeFile);
+            //fichier au mauvais format
+            fireEvent.change(input, {
+                target: {
+                    files: [new File(['image.txt'], 'image.txt', {
+                        type: 'image/txt'
+                    })],
+                }
             })
+            expect(handleChangeFile).toHaveBeenCalled()
+            expect(input.files[0].name).toBe('image.txt');
         })
-        /*describe("When I am on NewBill page and I select a file with a different extension than jpg, jpeg or png", () => {
-            test("Then the file is deleted", () => {
-                const html = NewBillUI();
-                document.body.innerHTML = html;
+    })
+})
 
-                const newBill = new NewBill({ document, onNavigate, store: null, localStorage: window.localStorage })
-                const handleChangeFile = jest.fn(() => newBill.handleChangeFile)
-                newBill.fileName = null;
-                const input = screen.getByTestId('file')
-                input.addEventListener('change', handleChangeFile)
-                fireEvent.change(input);
-                const file = screen.getByTestId('file').value;
-                expect(handleChangeFile).toHaveBeenCalled();
-            })
-            test("Then a message error appears", async() => {
-                const html = NewBillUI();
-                document.body.innerHTML = html;
-                const newBill = new NewBill({ document, onNavigate, store: null, localStorage: window.localStorage })
-                const handleChangeFile = jest.fn(() => newBill.handleChangeFile)
-                const input = screen.getByTestId('file');
-                input.addEventListener('change', handleChangeFile);
-                expect(handleChangeFile).toHaveBeenCalled();
-                await waitFor(() => expect(screen.getByTestId('required_extension').classList).toHaveLength(0));
-            })
+// test d'intégration POST
+describe("Given I am a user connected as Employee", () => {
+    describe("When I add a new bill", () => {
+        test("Then it creates a new bill", () => {
+            const newBill = {
+                "id": "47qAXb6fIm2zOKkLzMro",
+                "vat": "80",
+                "fileUrl": "https://test.storage.tld/v0/b/billable-677b6.a…f-1.jpg?alt=media&token=c1640e12-a24b-4b11-ae52-529112e9602a",
+                "status": "pending",
+                "type": "Hôtel et logement",
+                "commentary": "séminaire billed",
+                "name": "encore",
+                "fileName": "preview-facture-free-201801-pdf-1.jpg",
+                "date": "2004-04-04",
+                "amount": 400,
+                "commentAdmin": "ok",
+                "email": "a@a",
+                "pct": 20
+            };
+            const createBill = jest.fn(() => store.bills().create(newBill))
+            const send = screen.getByTestId('form-new-bill');
+            send.addEventListener('submit', createBill)
+            fireEvent(createBill)
+            expect(createBill).toHaveBeenCalled()
         })
-        describe("When I am on NewBill page and I select a bill in a correct format", () => {
-            test("Then it should create a new bill", () => {
-                const html = NewBillUI();
-                document.body.innerHTML = html;
-                const newBill = new NewBill({ document, onNavigate, store: null, localStorage: window.localStorage })
-                const submit = jest.fn(() => newBill.handleSubmit);
-                const submitBtn = screen.getByTestId('form-new-bill');
-                submitBtn.addEventListener('submit', submit);
-                fireEvent.submit(submit);
-                expect(submit).toHaveBeenCalled();
-            })
-        })*/
-
-
+        test("Then it fails with a 404 message error", async() => {
+            const html = BillsUI({ error: 'Erreur 404' })
+            document.body.innerHTML = html;
+            const message = await screen.getByText(/Erreur 404/);
+            expect(message).toBeTruthy();
+        })
+        test("Then it fails with a 500 message error", async() => {
+            const html = BillsUI({ error: 'Erreur 500' })
+            document.body.innerHTML = html;
+            const message = await screen.getByText(/Erreur 500/);
+            expect(message).toBeTruthy();
+        })
+    })
 })
