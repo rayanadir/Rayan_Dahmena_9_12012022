@@ -6,13 +6,14 @@ import { fireEvent, screen, waitFor } from "@testing-library/dom"
 import NewBillUI from "../views/NewBillUI.js"
 import NewBill from "../containers/NewBill.js"
 
-import { ROUTES_PATH } from "../constants/routes.js";
+import { ROUTES_PATH, ROUTES } from "../constants/routes.js";
 import { localStorageMock } from "../__mocks__/localStorage.js";
 
 import router from "../app/Router.js";
 import BillsUI from "../views/BillsUI.js";
 
 import store from "../__mocks__/store.js";
+import userEvent from '@testing-library/user-event'
 
 describe("Given I am connected as an employee", () => {
     describe("When I am on NewBill Page", () => {
@@ -88,26 +89,93 @@ describe("Given I am connected as an employee", () => {
 describe("Given I am a user connected as Employee", () => {
     describe("When I add a new bill", () => {
         test("Then it creates a new bill", () => {
-            const newBill = {
-                "id": "47qAXb6fIm2zOKkLzMro",
-                "vat": "80",
-                "fileUrl": "https://test.storage.tld/v0/b/billable-677b6.a…f-1.jpg?alt=media&token=c1640e12-a24b-4b11-ae52-529112e9602a",
-                "status": "pending",
-                "type": "Hôtel et logement",
-                "commentary": "séminaire billed",
-                "name": "encore",
-                "fileName": "preview-facture-free-201801-pdf-1.jpg",
-                "date": "2004-04-04",
-                "amount": 400,
-                "commentAdmin": "ok",
-                "email": "a@a",
-                "pct": 20
-            };
-            const createBill = jest.fn(() => store.bills().create(newBill))
-            const send = screen.getByTestId('form-new-bill');
-            send.addEventListener('submit', createBill)
-            fireEvent(createBill)
-            expect(createBill).toHaveBeenCalled()
+            document.body.innerHTML = NewBillUI()
+            const inputData = {
+                type: 'Transports',
+                name: 'Test',
+                datepicker: '2021-05-26',
+                amount: '100',
+                vat: '10',
+                pct: '19',
+                commentary: 'Test',
+                file: new File(['test'], 'test.png', { type: 'image/png' }),
+            }
+            const formNewBill = screen.getByTestId('form-new-bill')
+            const inputExpenseName = screen.getByTestId('expense-name')
+            const inputExpenseType = screen.getByTestId('expense-type')
+            const inputDatepicker = screen.getByTestId('datepicker')
+            const inputAmount = screen.getByTestId('amount')
+            const inputVAT = screen.getByTestId('vat')
+            const inputPCT = screen.getByTestId('pct')
+            const inputCommentary = screen.getByTestId('commentary')
+            const inputFile = screen.getByTestId('file')
+
+            fireEvent.change(inputExpenseType, {
+                target: { value: inputData.type },
+            })
+            expect(inputExpenseType.value).toBe(inputData.type)
+
+            fireEvent.change(inputExpenseName, {
+                target: { value: inputData.name },
+            })
+            expect(inputExpenseName.value).toBe(inputData.name)
+
+            fireEvent.change(inputDatepicker, {
+                target: { value: inputData.datepicker },
+            })
+            expect(inputDatepicker.value).toBe(inputData.datepicker)
+
+            fireEvent.change(inputAmount, {
+                target: { value: inputData.amount },
+            })
+            expect(inputAmount.value).toBe(inputData.amount)
+
+            fireEvent.change(inputVAT, {
+                target: { value: inputData.vat },
+            })
+            expect(inputVAT.value).toBe(inputData.vat)
+
+            fireEvent.change(inputPCT, {
+                target: { value: inputData.pct },
+            })
+            expect(inputPCT.value).toBe(inputData.pct)
+
+            fireEvent.change(inputCommentary, {
+                target: { value: inputData.commentary },
+            })
+            expect(inputCommentary.value).toBe(inputData.commentary)
+
+            userEvent.upload(inputFile, inputData.file)
+            expect(inputFile.files[0]).toStrictEqual(inputData.file)
+            expect(inputFile.files).toHaveLength(1)
+
+            // localStorage should be populated with form data
+            Object.defineProperty(window, 'localStorage', {
+                value: {
+                    getItem: jest.fn(() =>
+                        JSON.stringify({
+                            email: 'email@test.com',
+                        })
+                    ),
+                },
+                writable: true,
+            })
+
+            // we have to mock navigation to test it
+            const onNavigate = (pathname) => {
+                document.body.innerHTML = ROUTES({ pathname })
+            }
+
+            const newBill = new NewBill({
+                document,
+                onNavigate,
+                localStorage: window.localStorage,
+            })
+
+            const handleSubmit = jest.fn(newBill.handleSubmit)
+            formNewBill.addEventListener('submit', handleSubmit)
+            fireEvent.submit(formNewBill)
+            expect(handleSubmit).toHaveBeenCalled()
         })
         test("Then it fails with a 404 message error", async() => {
             const html = BillsUI({ error: 'Erreur 404' })
