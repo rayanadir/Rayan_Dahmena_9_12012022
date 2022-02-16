@@ -18,6 +18,7 @@ import userEvent from '@testing-library/user-event'
 describe("Given I am connected as an employee", () => {
     describe("When I am on NewBill Page", () => {
         test("Then mail icon in vertical layout should be highlighted", async() => {
+            //page NewBill
             Object.defineProperty(window, 'localStorage', { value: localStorageMock })
             window.localStorage.setItem('user', JSON.stringify({
                 type: 'Employee'
@@ -27,16 +28,20 @@ describe("Given I am connected as an employee", () => {
             document.body.append(root)
             router()
             window.onNavigate(ROUTES_PATH.NewBill)
+                // récupération de l'icône
             await waitFor(() => screen.getByTestId('icon-mail'))
             const windowIcon = screen.getByTestId('icon-mail')
+                //vérification si l'icône contient la classe active-icon
             const iconActivated = windowIcon.classList.contains('active-icon')
             expect(iconActivated).toBeTruthy()
         })
     })
     describe("When I select an image in a correct format", () => {
         test("Then the input file should display the file name", () => {
+            //page NewBill
             const html = NewBillUI();
             document.body.innerHTML = html;
+            // initialisation NewBill
             const newBill = new NewBill({ document, onNavigate, store, localStorage: window.localStorage })
             const handleChangeFile = jest.fn((e) => newBill.handleChangeFile(e))
             const input = screen.getByTestId('file');
@@ -53,9 +58,12 @@ describe("Given I am connected as an employee", () => {
             expect(input.files[0].name).toBe('image.png');
         })
         test("Then a bill is created", () => {
+            //page NewBill
             const html = NewBillUI();
             document.body.innerHTML = html;
+            // initialisation NewBill
             const newBill = new NewBill({ document, onNavigate, store: null, localStorage: window.localStorage })
+                //fonctionnalité submit
             const handleSubmit = jest.fn((e) => newBill.handleSubmit(e))
             const submit = screen.getByTestId('form-new-bill');
             submit.addEventListener('submit', handleSubmit);
@@ -65,9 +73,12 @@ describe("Given I am connected as an employee", () => {
     })
     describe("When I select a file with an incorrect extension", () => {
         test("Then the bill is deleted", () => {
+            //page NewBill
             const html = NewBillUI();
             document.body.innerHTML = html;
+            // initialisation NewBill
             const newBill = new NewBill({ document, onNavigate, store: null, localStorage: window.localStorage })
+                // fonctionnalité séléction fichier
             const handleChangeFile = jest.fn((e) => newBill.handleChangeFile(e))
             const input = screen.getByTestId('file');
             input.addEventListener('change', handleChangeFile);
@@ -89,17 +100,20 @@ describe("Given I am connected as an employee", () => {
 describe("Given I am a user connected as Employee", () => {
     describe("When I add a new bill", () => {
         test("Then it creates a new bill", () => {
+            //page NewBill
             document.body.innerHTML = NewBillUI()
+                // initialisation champs bills
             const inputData = {
-                type: 'Transports',
-                name: 'Test',
-                datepicker: '2021-05-26',
-                amount: '100',
-                vat: '10',
-                pct: '19',
-                commentary: 'Test',
-                file: new File(['test'], 'test.png', { type: 'image/png' }),
-            }
+                    type: 'Transports',
+                    name: 'Test',
+                    datepicker: '2021-05-26',
+                    amount: '100',
+                    vat: '10',
+                    pct: '19',
+                    commentary: 'Test',
+                    file: new File(['test'], 'test.png', { type: 'image/png' }),
+                }
+                // récupération éléments de la page
             const formNewBill = screen.getByTestId('form-new-bill')
             const inputExpenseName = screen.getByTestId('expense-name')
             const inputExpenseType = screen.getByTestId('expense-type')
@@ -110,6 +124,7 @@ describe("Given I am a user connected as Employee", () => {
             const inputCommentary = screen.getByTestId('commentary')
             const inputFile = screen.getByTestId('file')
 
+            // simulation de l'entrée des valeurs
             fireEvent.change(inputExpenseType, {
                 target: { value: inputData.type },
             })
@@ -166,12 +181,14 @@ describe("Given I am a user connected as Employee", () => {
                 document.body.innerHTML = ROUTES({ pathname })
             }
 
+            //initialisation NewBill
             const newBill = new NewBill({
                 document,
                 onNavigate,
                 localStorage: window.localStorage,
             })
 
+            //déclenchement de l'événement
             const handleSubmit = jest.fn(newBill.handleSubmit)
             formNewBill.addEventListener('submit', handleSubmit)
             fireEvent.submit(formNewBill)
