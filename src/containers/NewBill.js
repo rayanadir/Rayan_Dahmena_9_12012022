@@ -23,6 +23,7 @@ export default class NewBill {
         const formData = new FormData()
         const email = JSON.parse(localStorage.getItem("user")).email
         const fileType = file.type.substring(6)
+            // vérification de l'extension
         if (fileType == "png" || fileType == "jpg" || fileType == "jpeg") {
             document.getElementById('required_extension').classList.remove('error')
             formData.append('file', file)
@@ -42,6 +43,7 @@ export default class NewBill {
                     this.fileName = fileName
                 }).catch(error => console.error(error))
         } else {
+            // affichage de l'erreur
             this.document.querySelector(`input[data-testid="file"]`).value = null
             document.getElementById('required_extension').classList.add('error')
         }

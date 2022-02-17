@@ -88,6 +88,10 @@ export default class {
         if (this.counter === undefined || this.id !== bill.id) this.counter = 0
         if (this.id === undefined || this.id !== bill.id) this.id = bill.id;
         if (this.counter % 2 === 0) {
+            /**
+             * remplacement de bills par
+             * filteredBills(bills, getStatus(this.id))
+             */
             filteredBills(bills, getStatus(this.id)).forEach(b => {
                 $(`#open-bill${b.id}`).css({ background: '#0D5AE5' })
             })
@@ -144,6 +148,10 @@ export default class {
             this.counter++
         }
 
+        /**
+         * remplacement de bills par
+         * filteredBills(bills, getStatus(this.index))
+         */
         filteredBills(bills, getStatus(this.index)).forEach(bill => {
             $(`#open-bill${bill.id}`).click((e) => this.handleEditTicket(e, bill, bills))
         })

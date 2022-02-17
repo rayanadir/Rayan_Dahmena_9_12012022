@@ -35,31 +35,15 @@ export default class {
                 .bills()
                 .list()
                 .then((snapshot) => {
-                    /*bills.map(doc => {
-                        try {
-                            return {
-                            ...doc,
-                            date: formatDate(doc.date),
-                            status: formatStatus(doc.status)
-                            };
-                        } catch (e) {
-                            // if for some reason, corrupted data was introduced, we manage here failing formatDate function
-                            // log the error and return unformatted date in that case
-                            console.log(e, 'for', doc)
-                            return {
-                                ...doc,
-                                date: doc.date,
-                                status: formatStatus(doc.status)
-                            }
-                        }
-                    })*/
+                    // suppression bills null
                     const bills = snapshot.filter(bill => { return bill.type !== null });
+                    // rangement bills dans l'ordre antichronologique
                     bills.sort((a, b) => { return new Date(b.date) - new Date(a.date) });
+                    // conversion statut et date
                     bills.map((doc) => {
                         doc.date = formatDate(doc.date);
                         doc.status = formatStatus(doc.status);
                     });
-                    console.log(bills);
                     return bills;
                 })
         }
