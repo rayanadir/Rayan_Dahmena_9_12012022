@@ -100,8 +100,7 @@ describe("Given I am a user connected as Employee", () => {
             document.body.append(root)
             router()
             window.onNavigate(ROUTES_PATH.Bills)
-            const status = () => { return 'pending' || 'accepted' || 'refused' };
-            expect(status).toBeTruthy();
+            expect(document.querySelector('tbody').rows.length).toBeGreaterThan(0)
         })
     })
     describe("When an error occurs on API", () => {
