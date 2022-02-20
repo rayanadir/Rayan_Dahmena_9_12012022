@@ -87,12 +87,9 @@ export default class {
     handleEditTicket(e, bill, bills) {
         if (this.counter === undefined || this.id !== bill.id) this.counter = 0
         if (this.id === undefined || this.id !== bill.id) this.id = bill.id;
+        console.log(this.counter);
         if (this.counter % 2 === 0) {
-            /**
-             * remplacement de bills par
-             * filteredBills(bills, getStatus(this.id))
-             */
-            filteredBills(bills, getStatus(this.id)).forEach(b => {
+            bills.forEach(b => {
                 $(`#open-bill${b.id}`).css({ background: '#0D5AE5' })
             })
             $(`#open-bill${bill.id}`).css({ background: '#2A2B35' })
