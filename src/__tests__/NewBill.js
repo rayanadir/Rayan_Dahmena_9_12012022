@@ -18,7 +18,6 @@ import userEvent from '@testing-library/user-event'
 describe("Given I am connected as an employee", () => {
     describe("When I am on NewBill Page", () => {
         test("Then mail icon in vertical layout should be highlighted", async() => {
-            //page NewBill
             Object.defineProperty(window, 'localStorage', { value: localStorageMock })
             window.localStorage.setItem('user', JSON.stringify({
                 type: 'Employee'
@@ -26,14 +25,17 @@ describe("Given I am connected as an employee", () => {
             const root = document.createElement("div")
             root.setAttribute("id", "root")
             document.body.append(root)
-            router()
-            window.onNavigate(ROUTES_PATH.NewBill)
+                // mock navigation et chargement page
+            const pathname = ROUTES_PATH['NewBill']
+            root.innerHTML = ROUTES({ pathname: pathname, loading: true })
+            document.getElementById('layout-icon1').classList.remove('active-icon')
+            document.getElementById('layout-icon2').classList.add('active-icon')
                 // récupération de l'icône
             await waitFor(() => screen.getByTestId('icon-mail'))
-            const windowIcon = screen.getByTestId('icon-mail')
+            const mailIcon = screen.getByTestId('icon-mail')
                 //vérification si l'icône contient la classe active-icon
-            const iconActivated = windowIcon.classList.contains('active-icon')
-            expect(iconActivated).toBeTruthy()
+            const iconActivated = mailIcon.classList.contains('active-icon')
+            expect(iconActivated).toBeTruthy();
         })
     })
     describe("When I select an image in a correct format", () => {
@@ -41,6 +43,9 @@ describe("Given I am connected as an employee", () => {
             //page NewBill
             const html = NewBillUI();
             document.body.innerHTML = html;
+            const onNavigate = (pathname) => {
+                document.body.innerHTML = ROUTES({ pathname });
+            };
             // initialisation NewBill
             const newBill = new NewBill({ document, onNavigate, store, localStorage: window.localStorage })
             const handleChangeFile = jest.fn((e) => newBill.handleChangeFile(e))
@@ -61,6 +66,9 @@ describe("Given I am connected as an employee", () => {
             //page NewBill
             const html = NewBillUI();
             document.body.innerHTML = html;
+            const onNavigate = (pathname) => {
+                document.body.innerHTML = ROUTES({ pathname });
+            };
             // initialisation NewBill
             const newBill = new NewBill({ document, onNavigate, store: null, localStorage: window.localStorage })
                 //fonctionnalité submit
@@ -76,6 +84,9 @@ describe("Given I am connected as an employee", () => {
             //page NewBill
             const html = NewBillUI();
             document.body.innerHTML = html;
+            const onNavigate = (pathname) => {
+                document.body.innerHTML = ROUTES({ pathname });
+            };
             // initialisation NewBill
             const newBill = new NewBill({ document, onNavigate, store: null, localStorage: window.localStorage })
                 // fonctionnalité séléction fichier

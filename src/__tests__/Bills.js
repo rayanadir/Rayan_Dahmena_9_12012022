@@ -5,7 +5,7 @@
 import { screen, waitFor, fireEvent } from "@testing-library/dom"
 import BillsUI from "../views/BillsUI.js"
 import { bills } from "../fixtures/bills.js"
-import { ROUTES_PATH } from "../constants/routes.js";
+import { ROUTES_PATH, ROUTES } from "../constants/routes.js";
 import { localStorageMock } from "../__mocks__/localStorage.js";
 import Bills from '../containers/Bills.js'
 import router from "../app/Router.js";
@@ -15,7 +15,6 @@ import mockStore from "../__mocks__/store"
 describe("Given I am connected as an employee", () => {
     describe("When I am on Bills Page", () => {
         test("Then bill icon in vertical layout should be highlighted", async() => {
-            // page bills
             Object.defineProperty(window, 'localStorage', { value: localStorageMock })
             window.localStorage.setItem('user', JSON.stringify({
                 type: 'Employee'
@@ -23,8 +22,11 @@ describe("Given I am connected as an employee", () => {
             const root = document.createElement("div")
             root.setAttribute("id", "root")
             document.body.append(root)
-            router()
-            window.onNavigate(ROUTES_PATH.Bills)
+                // mock navigation et chargement page
+            const pathname = ROUTES_PATH['Bills']
+            root.innerHTML = ROUTES({ pathname: pathname, loading: true })
+            document.getElementById('layout-icon1').classList.add('active-icon')
+            document.getElementById('layout-icon2').classList.remove('active-icon')
                 // récupération de l'icône
             await waitFor(() => screen.getByTestId('icon-window'))
             const windowIcon = screen.getByTestId('icon-window')
@@ -50,6 +52,9 @@ describe("Given I am connected as an employee", () => {
             document.body.innerHTML = html;
             // initialisation bills
             const store = null;
+            const onNavigate = (pathname) => {
+                document.body.innerHTML = ROUTES({ pathname });
+            };
             const billsList = new Bills({ document, onNavigate, store, localStorage: window.localStorage, });
             // simulation modale
             $.fn.modal = jest.fn();
@@ -93,14 +98,23 @@ describe("Given I am connected as an employee", () => {
 //test d'intégration GET
 describe("Given I am a user connected as Employee", () => {
     describe("When I navigate to Bills page", () => {
-        test("fetch bills from mock API GET", async() => {
-            localStorage.setItem("user", JSON.stringify({ type: "Employee", email: "a@a" }));
+        test("fetch bills from mock API GET", () => {
+            Object.defineProperty(window, 'localStorage', { value: localStorageMock })
+            window.localStorage.setItem('user', JSON.stringify({
+                type: 'Employee'
+            }))
             const root = document.createElement("div")
             root.setAttribute("id", "root")
             document.body.append(root)
-            router()
-            window.onNavigate(ROUTES_PATH.Bills)
-            expect(document.querySelector('tbody').rows.length).toBeGreaterThan(0)
+                // mock navigation
+            const pathname = ROUTES_PATH['Bills']
+            root.innerHTML = ROUTES({ pathname: pathname, loading: true })
+                //mock bills
+            const bills = new Bills({ document, onNavigate, store: mockStore, localStorage })
+            bills.getBills().then(data => {
+                root.innerHTML = BillsUI({ data })
+                expect(document.querySelector('tbody').rows.length).toBeGreaterThan(0)
+            })
         })
     })
     describe("When an error occurs on API", () => {
